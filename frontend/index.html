@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AlphaAgent — AI Equity Research</title>
+  <meta name="description"
+    content="AI-powered professional equity research reports with charts, watchlist, and comparison." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+
+<body>
+
+  <!-- ── SIDEBAR ──────────────────────────────────────── -->
+  <aside id="sidebar">
+
+    <!-- Watchlist -->
+    <div class="sidebar-header">
+      <span class="sidebar-icon">⭐</span>
+      <span class="sidebar-title">Watchlist</span>
+    </div>
+    <div id="watchlist-container">
+      <p class="sidebar-empty" id="watchlist-empty">No stocks saved yet.</p>
+    </div>
+
+    <!-- Report History -->
+    <div class="sidebar-header sidebar-header-2">
+      <span class="sidebar-icon">📂</span>
+      <span class="sidebar-title">Report History</span>
+    </div>
+    <div id="report-list">
+      <p class="sidebar-empty">No reports yet. Run your first analysis!</p>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN ─────────────────────────────────────────── -->
+  <main id="main">
+
+    <!-- Hero -->
+    <header id="hero">
+      <div class="hero-badge">AI-Powered</div>
+      <h1 class="hero-title">
+        <span class="gradient-text">Alpha</span>Agent
+      </h1>
+      <p class="hero-sub">Professional equity research reports — in seconds.</p>
+    </header>
+
+    <!-- Mode Toggle -->
+    <div id="mode-toggle-row">
+      <button id="single-mode-btn" class="mode-btn active">Single Stock</button>
+      <button id="compare-mode-btn" class="mode-btn">⚖ Compare Stocks</button>
+    </div>
+
+    <!-- ── SINGLE SEARCH ── -->
+    <section id="search-section">
+      <form id="search-form" autocomplete="off">
+        <div class="input-wrapper">
+          <span class="input-icon">🔍</span>
+          <input id="query-input" type="text" placeholder="Company name or ticker (e.g. TCS, Tesla, HDFC Bank)" required
+            autocomplete="off" />
+        </div>
+        <button id="analyze-btn" type="submit">
+          <span id="btn-text">Analyze</span>
+          <span id="btn-spinner" class="spinner hidden"></span>
+        </button>
+      </form>
+      <div id="quick-tags">
+        <span class="tag" data-q="NVIDIA">NVIDIA</span>
+        <span class="tag" data-q="TCS">TCS</span>
+        <span class="tag" data-q="Tesla">Tesla</span>
+        <span class="tag" data-q="HDFC Bank">HDFC Bank</span>
+        <span class="tag" data-q="Infosys">Infosys</span>
+      </div>
+    </section>
+
+    <!-- ── COMPARE INPUT ── -->
+    <section id="compare-section" class="hidden">
+      <div class="compare-box">
+        <h2 class="compare-box-title">⚖ Compare Two Stocks</h2>
+        <div class="compare-inputs-row">
+          <div class="compare-field">
+            <label class="compare-label">Stock 1</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📊</span>
+              <input id="compare-input-1" type="text" placeholder="e.g. TCS, Tesla, HDFC Bank" autocomplete="off" />
+            </div>
+          </div>
+          <div class="compare-vs-badge">VS</div>
+          <div class="compare-field">
+            <label class="compare-label">Stock 2</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📊</span>
+              <input id="compare-input-2" type="text" placeholder="e.g. Infosys, Apple, ICICI Bank"
+                autocomplete="off" />
+            </div>
+          </div>
+        </div>
+        <button id="compare-analyze-btn" class="analyze-compare-btn" disabled>
+          <span id="cmp-btn-text">⚖ Compare Stocks</span>
+          <span id="cmp-btn-spinner" class="spinner hidden"></span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Status / streaming -->
+    <section id="status-section" class="hidden">
+      <div class="status-card">
+        <div class="status-header">
+          <div class="pulse-dot"></div>
+          <span id="status-label">Agent is thinking...</span>
+        </div>
+        <div id="streaming-log"></div>
+      </div>
+    </section>
+
+    <!-- ── SINGLE REPORT ── -->
+    <section id="report-section" class="hidden">
+      <div class="report-toolbar">
+        <span id="report-company-label" class="report-chip"></span>
+        <button id="watch-btn" class="icon-btn">⭐ Watch</button>
+        <button id="copy-btn" class="icon-btn">⧉ Copy</button>
+        <button id="new-btn" class="icon-btn">＋ New</button>
+      </div>
+      <!-- Chart -->
+      <div id="chart-section" class="chart-card hidden">
+        <div class="chart-header">
+          <span id="chart-title" class="chart-title-text">Price History (3 months)</span>
+          <div class="chart-period-btns">
+            <button class="period-btn active" data-period="1mo">1M</button>
+            <button class="period-btn" data-period="3mo">3M</button>
+            <button class="period-btn" data-period="6mo">6M</button>
+            <button class="period-btn" data-period="1y">1Y</button>
+          </div>
+        </div>
+        <canvas id="price-chart" height="90"></canvas>
+      </div>
+      <div id="report-content" class="report-card"></div>
+    </section>
+
+    <!-- ── COMPARE RESULTS ── -->
+    <section id="compare-results-section" class="hidden">
+      <div class="compare-toolbar">
+        <span class="report-chip" id="compare-result-chip">Comparison Results</span>
+        <button id="compare-new-btn" class="icon-btn">＋ New Comparison</button>
+      </div>
+      <div id="compare-tabs"></div>
+      <div id="compare-panels"></div>
+    </section>
+
+    <!-- Error -->
+    <section id="error-section" class="hidden">
+      <div class="error-card">
+        <span class="error-icon">⚠️</span>
+        <p id="error-message"></p>
+        <button id="retry-btn" class="icon-btn">Retry</button>
+      </div>
+    </section>
+
+    <!-- Welcome -->
+    <section id="welcome-section">
+      <div class="welcome-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>Live Market Data</h3>
+          <p>Real-time prices, P/E ratios and market cap from Yahoo Finance</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📈</div>
+          <h3>Price Charts</h3>
+          <p>Interactive 3-month price history chart inside every report</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⭐</div>
+          <h3>Watchlist</h3>
+          <p>Save favorite stocks and re-analyze them with one click</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">⚖</div>
+          <h3>Compare Stocks</h3>
+          <p>Analyze 2–3 stocks side by side and compare AI ratings</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📰</div>
+          <h3>Breaking News</h3>
+          <p>Latest company news crawled and summarized from the web</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>AI Analyst</h3>
+          <p>ReAct agent powered by Gemini &amp; Llama gives BUY/HOLD/SELL ratings</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="/app.js"></script>
+</body>
+
+</html>
