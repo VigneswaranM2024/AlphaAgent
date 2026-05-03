@@ -6,6 +6,9 @@
              Multi-stock comparison (SSE).
 ===================================================== */
 
+// ── Configuration ───────────────────────────────────────
+const API_BASE = 'http://10.112.175.1:5000'; // Change to production URL or your local IP
+
 // ── DOM Refs ──────────────────────────────────────────
 const form = document.getElementById('search-form');
 const queryInput = document.getElementById('query-input');
@@ -96,7 +99,7 @@ async function loadChart(ticker, period = '3mo') {
   if (!ticker) { hide(chartSection); return; }
   chartTitleEl.textContent = `${ticker} — Price History`;
   try {
-    const res = await fetch(`/api/chart/${encodeURIComponent(ticker)}?period=${period}`);
+    const res = await fetch(API_BASE + `/api/chart/${encodeURIComponent(ticker)}?period=${period}`);
     const data = await res.json();
     if (data.error) { hide(chartSection); return; }
 
@@ -297,7 +300,7 @@ function startAnalysis(query) {
   show(statusSection);
   statusLabel.textContent = `Analyzing "${query}"…`;
 
-  fetch('/api/analyze', {
+  fetch(API_BASE + '/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ query })
@@ -359,7 +362,7 @@ function handleEvent(event) {
 // ── Report History ─────────────────────────────────────
 async function loadHistory() {
   try {
-    const reports = await (await fetch('/api/reports')).json();
+    const reports = await (await fetch(API_BASE + '/api/reports')).json();
     if (!Array.isArray(reports) || reports.length === 0) return;
     reportList.innerHTML = '';
     reports.forEach(r => {
@@ -367,8 +370,15 @@ async function loadHistory() {
       const el = document.createElement('div');
       el.className = 'report-item';
       el.dataset.filename = r.filename;
-      el.innerHTML = `<span class="report-item-name">${r.company}</span><span class="report-item-date">${dateStr}</span>`;
-      el.addEventListener('click', () => loadSavedReport(r.filename, r.company, el));
+      el.innerHTML = `
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:3px;">
+          <span class="report-item-name">${r.company}</span>
+          <span class="report-item-date">${dateStr}</span>
+        </div>
+        <button class="report-del-btn" title="Delete Report">✕</button>
+      `;
+      el.querySelector('div').addEventListener('click', () => loadSavedReport(r.filename, r.company, el));
+      el.querySelector('.report-del-btn').addEventListener('click', (e) => deleteReport(r.filename, el, e));
       reportList.appendChild(el);
     });
   } catch (e) { console.warn('History load failed', e); }
@@ -376,7 +386,7 @@ async function loadHistory() {
 
 async function loadSavedReport(filename, company, el) {
   try {
-    const data = await (await fetch(`/api/reports/${filename}`)).json();
+    const data = await (await fetch(API_BASE + `/api/reports/${filename}`)).json();
     if (data.error) { showError(data.error); return; }
     currentMarkdown = data.content;
     currentQuery = company;
@@ -397,12 +407,56 @@ function addHistoryItem(filename, company) {
   const el = document.createElement('div');
   el.className = 'report-item active';
   el.dataset.filename = filename;
-  el.innerHTML = `<span class="report-item-name">${company}</span><span class="report-item-date">${dateStr}</span>`;
-  el.addEventListener('click', () => loadSavedReport(filename, company, el));
+  el.innerHTML = `
+    <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:3px;">
+      <span class="report-item-name">${company}</span>
+      <span class="report-item-date">${dateStr}</span>
+    </div>
+    <button class="report-del-btn" title="Delete Report">✕</button>
+  `;
+  el.querySelector('div').addEventListener('click', () => loadSavedReport(filename, company, el));
+  el.querySelector('.report-del-btn').addEventListener('click', (e) => deleteReport(filename, el, e));
 
   if (activeReportEl) activeReportEl.classList.remove('active');
   activeReportEl = el;
   reportList.prepend(el);
+}
+
+async function deleteReport(filename, el, e) {
+  e.stopPropagation();
+  if (!confirm("Are you sure you want to delete this report?")) return;
+  try {
+    const res = await fetch(API_BASE + `/api/reports/${filename}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    el.remove();
+    if (reportList.children.length === 0) {
+      reportList.innerHTML = '<p class="sidebar-empty">No reports yet. Run your first analysis!</p>';
+    }
+    if (activeReportEl === el) {
+      resetUI();
+      activeReportEl = null;
+    }
+  } catch (err) {
+    showError("Could not delete report: " + err.message);
+  }
+}
+
+const clearHistoryBtn = document.getElementById('clear-history-btn');
+if (clearHistoryBtn) {
+  clearHistoryBtn.addEventListener('click', async () => {
+    if (!confirm("Warning: This will delete ALL reports. Proceed?")) return;
+    try {
+      const res = await fetch(API_BASE + '/api/reports', { method: 'DELETE' });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      reportList.innerHTML = '<p class="sidebar-empty">No reports yet. Run your first analysis!</p>';
+      resetUI();
+      activeReportEl = null;
+    } catch (err) {
+      showError("Could not clear history: " + err.message);
+    }
+  });
 }
 
 // ── Compare Mode ───────────────────────────────────────
@@ -484,7 +538,7 @@ function startCompare(tickers) {
 
   const compareReports = {};
 
-  fetch('/api/compare', {
+  fetch(API_BASE + '/api/compare', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tickers })
@@ -585,7 +639,7 @@ async function loadCompareChart(ticker, panelIndex) {
   const canvEl = document.getElementById(`cmp-chart-${panelIndex}`);
   if (!cardEl || !canvEl) return;
   try {
-    const data = await (await fetch(`/api/chart/${encodeURIComponent(ticker)}?period=3mo`)).json();
+    const data = await (await fetch(API_BASE + `/api/chart/${encodeURIComponent(ticker)}?period=3mo`)).json();
     if (data.error || !data.prices) return;
     cardEl.classList.remove('hidden');
     const ctx = canvEl.getContext('2d');

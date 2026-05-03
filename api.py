@@ -4,10 +4,12 @@ import glob
 import threading
 import queue
 from flask import Flask, request, jsonify, send_from_directory, Response, stream_with_context
+from flask_cors import CORS
 from agent import create_agent
 from langchain_core.messages import HumanMessage, SystemMessage
 
 app = Flask(__name__, static_folder='frontend', static_url_path='')
+CORS(app)
 
 SYSTEM_PROMPT = (
     "You are a professional Equity Research Analyst. Your job is to research stocks, "
@@ -178,6 +180,31 @@ def get_report(filename):
     return jsonify({'filename': filename, 'content': content})
 
 
+@app.route('/api/reports/<path:filename>', methods=['DELETE'])
+def delete_report(filename):
+    base = os.path.dirname(__file__)
+    filepath = os.path.join(base, filename)
+    if not os.path.isfile(filepath) or not filename.endswith('_report.md'):
+        return jsonify({'error': 'Report not found'}), 404
+    try:
+        os.remove(filepath)
+        return jsonify({'message': 'Report deleted successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/reports', methods=['DELETE'])
+def delete_all_reports():
+    base = os.path.dirname(__file__)
+    files = glob.glob(os.path.join(base, '*_report.md'))
+    try:
+        for f in files:
+            os.remove(f)
+        return jsonify({'message': 'All reports deleted successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/api/chart/<path:ticker>', methods=['GET'])
 def get_chart(ticker):
     """Return price history for Chart.js rendering. Resolves full names → tickers."""
@@ -332,6 +359,5 @@ def compare():
 
 
 if __name__ == '__main__':
-    print("Starting AlphaAgent API server at http://localhost:5000")
-    app.run(debug=False, port=5000, threaded=True)
-
+    print("Starting AlphaAgent API server at http://0.0.0.0:5000")
+    app.run(host='0.0.0.0', debug=False, port=5000, threaded=True)
