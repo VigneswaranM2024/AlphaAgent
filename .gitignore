@@ -35,3 +35,21 @@ desktop.ini
 
 # ── Logs ─────────────────────────────
 *.log
+
+# ── Node.js / JS ─────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Expo / React Native ──────────────
+.expo/
+dist/
+web-build/
+
+# ── Android ──────────────────────────
+android/app/build/
+android/app/src/main/assets/
+android/app/src/main/res/raw/
+*.apk
+*.aab
