@@ -7,7 +7,7 @@
 ===================================================== */
 
 // ── Configuration ───────────────────────────────────────
-const API_BASE = 'http://10.112.175.1:5000'; // Change to production URL or your local IP
+const API_BASE = ''; // Uses relative path to the current origin
 
 // ── DOM Refs ──────────────────────────────────────────
 const form = document.getElementById('search-form');

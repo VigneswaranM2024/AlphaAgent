@@ -30,12 +30,6 @@ def create_agent(provider="gemini"):
         raise ValueError(f"Unknown provider: {provider}")
 
     tools = [
-        get_stock_price,
-        get_historical_prices,
-        get_stock_news,
-        get_balance_sheet,
-        get_google_finance_quote,
-        get_google_finance_news,
         get_comprehensive_stock_info
     ]
 

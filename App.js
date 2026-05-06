@@ -1,21 +1,25 @@
 import React from 'react';
-import { StyleSheet, SafeAreaView, StatusBar, Platform } from 'react-native';
+import { StyleSheet, StatusBar, Platform } from 'react-native';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { WebView } from 'react-native-webview';
 
 export default function App() {
   // Pointing to your laptop's local IP address where the Flask API is running.
-  const LAPTOP_IP = 'http://10.112.175.1:5000';
+  const LAPTOP_IP = 'http://10.46.59.1:5000';
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="#090d1a" />
-      <WebView 
-        source={{ uri: LAPTOP_IP }} 
-        style={styles.webview}
-        javaScriptEnabled={true}
-        domStorageEnabled={true}
-      />
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="light-content" backgroundColor="#090d1a" />
+        <WebView 
+          source={{ uri: LAPTOP_IP }} 
+          style={styles.webview}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          mixedContentMode="always"
+        />
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
 
